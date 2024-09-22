@@ -1,0 +1,450 @@
+---
+title: "Projet Datamining : Les facteurs de risques affectant la dépression chez les personnes âgées"
+author: "Yacoub Ansari"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+    theme: united
+  pdf_document:
+    toc: true
+  word_document:
+    toc: true
+editor_options:
+  chunk_output_type: console
+---
+
+
+# Les facteurs de risques affectant la dépression chez les personnes agées 
+
+# https://releases.sharedataportal.eu/
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+###########################################################################
+#################Nettoyage de Rstudio #####################################
+rm(list = ls(all.names = TRUE)) # permet de nettoyer tout l'environnement avant de démarrer l'analyse
+
+```
+
+
+
+
+
+```{r}
+############################################################################
+######################Importer et préparer le jeu de données ###############
+############################################################################
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+# Définir le répertoire de travail
+getwd()
+setwd("C:\\Users\\yalen\\Downloads")
+
+# Charger le fichier Excel
+DM <- read_excel(file.choose(), 
+                 sheet = "F1", 
+                 col_types = c("numeric", "numeric", "numeric", "numeric",
+                               "numeric", "numeric", "numeric", "numeric",
+                               "numeric", "numeric", "numeric", "numeric", "text"))
+
+
+```
+
+```{r}
+DMM = DM[1:300,]
+```
+
+```{r}
+summary(DM)
+```
+
+
+# Introduction
+
+Le marché de l'immobilier new-yorkais est réputé comme  l'un des plus dynamique et dominants connu par ça capacité a s'adapter rapidement aux differents chocs économiques, caracterisée par une tendance perpétuel de croissance, attire aussi tant les residents que les investisseurs. Mettre en evidence les determinants de prix de maisons dans ce métropole cosmopolite revient à étudier un milieu caracterisée par un environnement economique et sociales extréméent complexes ou plusueurs facteurs tel que l'offre, la demande, la conjoncture  et les politiques economique s'entremêlent.
+
+Dans ce rapport, a travers differentes methodes d'analyse des données nous allons etudier une base de données en plus d'autres sources académiques sur le marché immobilier dans le but de degager les principaux facteurs susceptible de déterminer le niveaux de prix des maisons au sein de la ville de new-york.
+
+ville cosmopolite, le marché immobiliers a new-york est très diversifié notamment chaque quartiers est diffrentes ayants ces propres caractéristiques avec un environnement economique, social et ou demograpghique qui lui est propre entrainant une variations de prix de l'immobilier en fonction d'une multitude de facteurs.
+
+L'objectif etant dans une prémiere partie d'enoncé une revue de littérature d'un certaines nombres des trveaux qui ont été deja réalisés sur le suijet principalement aux etas-unis et au canada. En second lieu, nous allons effectuer une présentation de la base de données ainsi qu'une analyse descriptive de ces donnés.
+
+En outre, nous allons consacré  une troixiéme partie à l'analyse approfondie de la base à l'aide d'un ACP et je finirais cette partie par l'élaboration d'un modélé econométrique de régression linéaires multiple pour mettre en evidence les principaux déterminants des prix des maisons.
+
+Au final,nous allons abordés une dernière partie qui sera consacrée a l'application des methodes PLS et PCR permettant d'approfondir notre analyse.  
+
+A travers cet méthodologie d'analyse, j'espére fournir des informations significatifs et révéler la nature de l'influence excercé par chaque determinant sur les prix des logements et ainsi fournir un rapports a la fin succeptible d'etre un outils d'aide a la décisions.
+
+# Revue de la littérature
+
+Les determinants des pris des maisons ont fait l'objet de plusieurs etudes  dans des nombreux regions du mondes notamment aux etats unis et plus particulièrement au sein de la ville de new-York disposant d'un des marché de l'immmonbilier le plus adynamiques au monde,Creant un enorme attrait tant pour les chercheurs que les acteurs du marché immobilier.
+
+1 Déterminants du prix réél des logements au Canada, Etude méné par  Mario FORTIN et André LECLERC (Janvier 2002). L'objectif étant  d’identifier quelles variables ont affecté l’équilibre du marché du logement 
+au Canada a travers un modèle structurel sur des données annuelles agrégées de 1956 à 2001. Ils ont reussi a élaborés ce modèle permettant d’expliquer l’évolution du prix moyen et du nombre d’unités de logement. les conslusions de leurs modélisations révèlent que  Trois variables exercent une influence significative sur le prix réel, a savoir le revenu réel par personne adulte, le taux d’intérêt nominal sur les prêts hypothécaires 
+à l’habitation à 5 ans et la croissance de la population de 25 à 54 ans.Donc cet etude met en limiere l'importance de l'emprunt et du revenu mais aussi il souligne le role que joue une comosante socio-demographique particliers dans la détermination du prix des maisons. 
+ 
+2.Les déterminants des prix de l'immobilier aux Etats-Unis après la Grande Récession une analyse des bornes extrêmes méné par Achille Dargaud FOFACK et Serge Djoudji TEMKENG. cet etude a pour objectif d'expliquer la hausse record des prix des logements aux etats qui ont dépassé les niveaux record d'avant la crise de sub-prime entrainant des inquiétudes des acteur du marché de l'immobilier.Ainsi a travers des données mensuelles sur la periodes allant de juillet 2009 – date à laquelle l'économie américaine est sortie de la récession – jusqu'en avril 2019, ont été étudiée via la méthode  d'analyse des bornes extrêmes . A partir de cet etude ils ont dégager 12 déterminants potentiels des prix de l'immobilier.Les resultats de l'etude ont montré les conclusions suivantes. le credit immobilier , le taux d'interet sur les près hypothécaires, le credit immobilier, les depenses en constructions, la potiliques monétaire de l'assouplissement quantitaifs qui a été mise en place a l'epoque par la resrve fédéral  dans le but de stimuler les prés et relancer l'activité economique constuent les pricipeaux facteurs qui determinent les prix des maisons aux etats-unis et expliquent notamment la hausse anormale du niveaux des prix des loyers aux etats-unis.
+
+# Pésentation des données
+
+Les données utilisées dans ce rapports sont extraites sur le cite Kagle et sont des données sur les determinants des prix des logements aux etats-unis et plus précisément la ville de New-York.Cependant ces données sont mise a jour chaque année, sa qui signifie que ils sont bien adapté comme outils a jour pour ménéer une etude prospective du marché de l'immobilier américains. 
+
+
+
+
+
+
+```{r}
+library(FactoMineR)
+res.dm<-PCA(DM ,
+         scale.unit=TRUE,
+         ncp=5, quanti.sup=(10:12),
+         quali.sup=c(13:13),
+         graph = TRUE)
+```
+
+le graphique ci-dessous represente les variables ainsi que leurs positionnement par rappport a l'origine déterminant ainsi leurs cotribution dans la contructions des dimensions de l'ACP. 
+
+
+
+```{r}
+print(plot.PCA(res.dm, axes=c(1, 2),
+               choix="ind",
+               habillage = "chamb_invit",
+               col.ind="black",
+               col.ind.sup="blue", 
+               col.quali="magenta",
+               label=c("ind", "ind.sup", "quali"),
+               new.plot=TRUE,
+               title="graphe des individus"))
+```
+
+En premier lieu, Nous remarquons la présence d'un effet de taille   
+
+
+# tableaux de corrélation
+```{r}
+correlation_matrix <- cor(DM[-13])
+print(correlation_matrix)
+```
+
+```{r}
+summary(DM$Superficie)
+```
+
+
+# LES MCO
+
+```{r}
+MCO = lm(prix ~ Superficie + chambres + bains + etages + Route +  chamb_invit + Climatisation + parking + prefarea + DM$`sous-sol` ,data = DM)
+summary(MCO)
+```
+
+
+# Installation et chargement du package
+
+# Régression robuste
+
+```{r}
+library(MASS)
+robust_model <- rlm(prix ~ Superficie + chambres + bains + etages + Route +  chamb_invit + Climatisation + parking + prefarea + DM$`sous-sol` ,data = DM)
+summary(robust_model)
+```
+
+# Modèle GLM avec une distribution gaussienne
+
+```{r}
+
+glm_model <- glm(prix ~ Superficie + bains + etages + Route +  chamb_invit + Climatisation + parking + prefarea + DM$`sous-sol` ,data = DM, family = gaussian)
+summary(glm_model)
+```
+
+# Test de normalité des résidus
+
+```{r}
+library(car)
+residuals <- resid(MCO)  # Remplacez "votre_modele" par le nom de votre modèle
+shapiro.test(residuals)
+```
+
+
+
+# Test d'hétéroscédasticité (Test de Breusch-Pagan)
+```{r}
+library(lmtest)
+bptest(glm_model)
+```
+
+
+# la valeur vif sert a savoir si il ya pas un probléme de multicolinéarité entre nos explicatifs
+
+```{r}
+library(car)
+vif(MCO)
+```
+
+
+```{r}
+library(pls)
+Y <- as.matrix(DMM[,1])
+X <- as.matrix(DMM[,2:12])
+```
+
+
+```{r}
+# Spécifiez le nombre maximum de composantes à tester
+n_max_components <- 10
+
+# Créez le modèle PLS avec validation croisée
+pls_model_cv <- plsr(Y ~ X, data = DMM, ncomp = n_max_components , validation = "CV")
+
+# Affichez le plot de validation croisée
+validationplot(pls_model_cv, val.type = "MSEP")
+
+```
+
+Après l'observation on voit que 3 est le nombre de comosantes correspond au point ou l'erreur quadratique moyenne de prediction est le plus minimale, correspondant au nombres de compoasante optimale pour ce modéle PLS. 
+dans ce cas le test de validation croisée  nous indique de garder que troix composante qui minimise le RMSE.
+# graphique des prédictions
+
+```{r}
+data1 <- plsr(Y ~ X, ncomp=3, scale=TRUE, validation="LOO", data=DM)
+summary(data1)
+```
+
+
+
+
+
+```{r}
+data3 <- mvr(Y ~ X, ncomp=5, scale=TRUE, validation="LOO", data=DM)
+summary(data3)
+```
+
+
+
+# chargements pour X
+```{r}
+loadings(data1)
+```
+
+#poids pour X
+
+```{r}
+loading.weights(data1)
+```
+
+
+#poids pour Y
+```{r}
+Yloadings(data1)
+```
+
+#coefficients de régression
+
+```{r}
+coef(data1)
+```
+
+
+
+ 
+
+
+
+
+```{r}
+oscorespls.fit(
+  X,
+  Y,
+  ncomp = 3,
+  center = TRUE,
+  stripped = FALSE,
+  tol = .Machine$double.eps^0.5,
+  maxit = 100,
+  
+)
+```
+
+```{r}
+predict(data1, ncomp=3, newdata=DM)
+```
+
+#prédiction
+
+```{r}
+fitted(data1)
+```
+
+
+#résidus
+
+```{r}
+residuals(data1)
+```
+
+
+
+
+#graphique des prédictions
+
+```{r}
+plot(data1, ncomp=3, asp=1, line=TRUE)
+```
+
+`
+
+
+# Modéle de mesure
+
+```{r}
+library(seminr)
+mm = constructs(
+  composite("Comp1",multi_items("",c("Superficie","bains","Climatisation","parking"))),
+  composite("Comp2",multi_items("", c("chambres","sous-sol"))),
+  composite("Comp3",multi_items("",c("etages", "chamb_invit"))),
+  composite("prix",single_item("prix"))
+  )
+```
+
+
+
+```{r}
+ms = relationships(
+  paths("Comp1", "Comp2"),  # Relation entre Comp1 et Comp2
+  paths("Comp1", "Comp3"),
+  paths("Comp2", "Comp3"),  # Relation entre Comp2 et Comp3
+  paths("Comp2", "prix"),
+  paths("Comp3", "prix"),    # Relation entre Comp3 et la variable de réponse (prix)
+  paths("Comp1", "prix")     # Relation directe entre Comp1 et la variable de réponse (prix)
+)
+
+```
+
+
+
+# estimation du modèle
+
+```{r}
+satPLS.mod = estimate_pls(DM,mm,ms)
+```
+
+```{r}
+statpls.fit = summary(satPLS.mod)
+```
+
+```{r}
+plot(satPLS.mod)
+```
+L'objectif etant d'expliquer les fluctuatution du prix des maisons sur le marché de l'immobilier New-Yorkais a travers troix variables latentes
+on'a les troix variable latente comp1, comp2 et comp3 qui ont des effets positifs sur le niveaux prix des maison.
+
+# bootstrop du modèle
+
+```{r}
+boot.statpls = bootstrap_model(satPLS.mod,nboot =1000)
+sum.boot.statpls = summary(boot.statpls,alpha = 0.05)
+```
+
+```{r}
+plot(boot.statpls)
+```
+
+# assement modèle de mesure
+
+```{r}
+statpls.fit$loadings**2 # fiabilité de l'indicateur 
+```
+
+```{r}
+statpls.fit$reliability # fiabilité interne du modèle
+```
+
+
+```{r}
+statpls.fit$validity$fl_criteria
+```
+
+
+
+---
+title: "Curriculum Vitae"
+author: "Jean Dupont"
+output: pdf_document
+fontsize: 11pt
+geometry: margin=1in
+---
+
+# Jean Dupont
+
+Email: jean.dupont@example.com  
+Téléphone: 06 12 34 56 78
+
+## Éducation
+
+**Master en Data Analysis**  
+Université XYZ, Paris  
+Septembre 2022 - Présent
+
+**Licence en Statistiques et Informatique**  
+Université ABC, Lyon  
+Septembre 2019 - Juin 2022
+
+## Expérience Professionnelle
+
+**Stagiaire Data Analyst**  
+Entreprise Data Solutions, Paris  
+Juin 2023 - Août 2023  
+- Analyse des données clients pour identifier les tendances de consommation.
+- Utilisation de R et Python pour manipuler et visualiser les données.
+- Collaboration avec l'équipe marketing pour optimiser les campagnes publicitaires.
+
+**Assistant de Recherche**  
+Université ABC, Lyon  
+Janvier 2022 - Juin 2022  
+- Collecte et analyse de données pour un projet de recherche en biostatistiques.
+- Utilisation de logiciels statistiques tels que R et SPSS.
+- Rédaction de rapports de recherche et présentation des résultats.
+
+## Compétences
+
+- **Langages de programmation** : R, Python, SQL
+- **Analyse de données** : Manipulation et visualisation de données, statistiques descriptives et inférentielles
+- **Logiciels** : RStudio, Jupyter, Tableau, Excel
+- **Langues** : Français (natif), Anglais (courant)
+
+## Projets Académiques
+
+**Analyse de la performance des étudiants**  
+Université XYZ, Paris  
+- Analyse des données de performance des étudiants pour identifier les facteurs influençant la réussite académique.
+- Utilisation de techniques de régression et de classification en R.
+
+**Prévision des ventes**  
+Université ABC, Lyon  
+- Projet de prévision des ventes pour une chaîne de magasins en utilisant des modèles ARIMA.
+- Visualisation des résultats à l'aide de ggplot2.
+
+## Certifications
+
+- **Certification en Data Science** - Coursera
+- **Certification en Analyse de Données avec R** - edX
+
+## Publications
+
+- **Titre de l'article** - Revue Scientifique, 2023
+- **Titre de l'article** - Conférence Internationale en Statistiques, 2022
+
+## Activités Extra-scolaires
+
+- **Membre du Club de Data Science** - Université XYZ
+- **Bénévole pour l'Association XYZ** - Organisation d'ateliers de codage pour les lycéens
